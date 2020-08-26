@@ -1,20 +1,20 @@
 {
-  "name": "ApiMyAppFE",
+  "name": "gitapp_efs",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "GitApp Enhanced and Written From Scratch",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Vignesh",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
-    "fs": "0.0.1-security",
-    "http": "0.0.1-security",
-    "sqlite3": "^4.2.0",
-    "url": "^0.11.0"
+    "fs-extra": "^9.0.1",
+    "multer": "^1.4.2",
+    "sharp": "^0.26.0",
+    "sqlite3": "^5.0.0"
   }
 }
