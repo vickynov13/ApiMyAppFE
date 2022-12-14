@@ -18,7 +18,8 @@ app.use('/media',media);
 
 
 app.get('*',(req,res)=>{
-  res.sendFile(path.join(angpath,'/index.html'));
+  //res.sendFile(path.join(angpath,'/index.html'));
+  res.send({"status":"serverUp"});
 });
 
 app.listen(port, function () {
