@@ -6,16 +6,8 @@ const multer = require('multer');
 const sharp = require('sharp');
 const url = require('url');
 const fs = require('fs-extra');
+const db = require("./db.js");
 
-const sqlite3 = require('sqlite3').verbose();
-let db = new sqlite3.Database(__dirname + '/db/gitapp.db', sqlite3.OPEN_READWRITE, (err) => {
-  if (err) {
-    console.log(__dirname + '/db/gitapp.db');
-    console.error(err.message);
-  }else{
-    console.log('connected to feed');
-  }
-});
 
 const storage= multer.diskStorage({
     destination:(req,file,callBack)=>{
@@ -31,7 +23,7 @@ const storage= multer.diskStorage({
     console.log(req.headers.skey);
     var sql1 ='SELECT count(username) AS res from USER_LOGIN_INFO WHERE username like ? and sessionkey =?';
     var params1 =[req.headers.uid, req.headers.skey];
-    db.all(sql1,params1, (err, results, fields) => {
+    db.query(sql1,params1, (err, results, fields) => {
       if (err) {
         res.send({status:"Authentication Failed"});
       }else{
@@ -54,8 +46,8 @@ const storage= multer.diskStorage({
       let uploadedby = req.headers.uid;
       let actualname = file.originalname;
       let optmname = "OPT_"+actualname;
-      var sql2 ="INSERT INTO MEDIA_INFO (photo_name,lq_photoname,uploaded_by,added_dte,location,occation,person1,person2,tag5) VALUES (?,?,?,strftime('%d-%m-%Y', date()),?,?,?,?,?)";
-      var sql3 ="UPDATE MEDIA_INFO SET added_dte = strftime('%d-%m-%Y', date()), location = ?,occation = ?,person1 = ?,person2 = ?,tag5 = ? WHERE photo_name = ?";
+      var sql2 ="INSERT INTO MEDIA_INFO (photo_name,lq_photoname,uploaded_by,added_dte,location,occation,person1,person2,tag5) VALUES (?,?,?,DATE_FORMAT(NOW(), '%d-%m-%Y'),?,?,?,?,?)";
+      var sql3 ="UPDATE MEDIA_INFO SET added_dte = DATE_FORMAT(NOW(), '%d-%m-%Y'), location = ?,occation = ?,person1 = ?,person2 = ?,tag5 = ? WHERE photo_name = ?";
       var params2 =[actualname,optmname,uploadedby,location,occation,person1,person2,tag5];
       var params3 =[location,occation,person1,person2,tag5,actualname];
       console.log(file);
@@ -76,9 +68,9 @@ const storage= multer.diskStorage({
       })
       .toFile(pics+'/'+ optmname)
       .then(() => {
-        db.run(sql2,params2, (err, results) => {
+        db.query(sql2,params2, (err, results) => {
           if (err) {
-            db.run(sql3,params3, (err, results) => {
+            db.query(sql3,params3, (err, results) => {
               if (err) {
                 res.send(err);
               }else{
@@ -101,7 +93,7 @@ const storage= multer.diskStorage({
           var skey = queryObject.skey;
           var sql1 ='SELECT count(username) AS res from USER_LOGIN_INFO WHERE username like ? and sessionkey =?';
           var params1 =[uid, skey];
-          db.all(sql1,params1, (err, results, fields) => {
+          db.query(sql1,params1, (err, results, fields) => {
           if (err) {
             res.send({status:"Authentication Failed"});
           }else{
@@ -117,7 +109,7 @@ const storage= multer.diskStorage({
       router.get('/myuploads', authentication, (req, res) => {
         var sql1 ='select id, uploaded_by as user, added_dte as datee, substr(lq_photoname,1,LENGTH(lq_photoname)-4) as photo, substr(photo_name,1,LENGTH(photo_name)-4) as hqphoto FROM MEDIA_INFO WHERE uploaded_by = ?  ORDER BY id DESC';
         var params1 =[req.headers.uid];
-        db.all(sql1,params1, (err, results, fields) => {
+        db.query(sql1,params1, (err, results, fields) => {
           if (err) {
             return res.send({status:"Authentication Failed"});
             }else{
@@ -138,13 +130,13 @@ const storage= multer.diskStorage({
             var params2 =[uid,uid];
           var sql1 ='SELECT count(username) AS res from USER_LOGIN_INFO WHERE username like ? and sessionkey =?';
           var params1 =[uid, skey];
-          db.all(sql1,params1, (err, results) => {
+          db.query(sql1,params1, (err, results) => {
             if (err) {
             console.log(err);
              return res.send([{'fname':null,'lname': null,'hasaccess':null,'updated':null,'username':null,'error':'sql 1 err'}]);
             }else{
               if(results[0].res===1){
-               db.all(sql2,params2, (err, results) => {
+               db.query(sql2,params2, (err, results) => {
                  if (err) {
                   console.log(err);
                    return res.send([{'fname':null,'lname': null,'hasaccess':null,'updated':null,'username':null,'error':'sql 2 err'}]);
